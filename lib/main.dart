@@ -32,8 +32,21 @@ class _MealListScreenState extends State<MealListScreen> {
   @override
   void initState() {
     super.initState();
+    loadFavorites();
     futureMeals = MealService().fetchMeals().then((data) =>
         data.map((meal) => Meal.fromJson(meal)).toList());
+  }
+
+  void loadFavorites() async {
+    final favoriteIds = await MealService().loadFavorites();
+    print('Favorites loaded: $favoriteIds');
+    final meals = await futureMeals;
+    setState(() {
+      favoriteMeals = meals.where((meal) => favoriteIds.contains(meal.id)).toList();
+      for (var meal in meals) {
+        meal.isFavorite = favoriteIds.contains(meal.id);
+      }
+    });
   }
 
   void toggleFavorite(Meal meal) {
@@ -44,6 +57,8 @@ class _MealListScreenState extends State<MealListScreen> {
       } else {
         favoriteMeals.remove(meal);
       }
+      MealService().saveFavorites(favoriteMeals);
+      print('Favorites saved: ${favoriteMeals.map((meal) => meal.id).toList()}');
     });
   }
 
@@ -54,6 +69,7 @@ class _MealListScreenState extends State<MealListScreen> {
         title: Text('Meals'),
         actions: [
           IconButton(
+              icon: Icon(Icons.favorite),
               onPressed: (){
                 Navigator.push(
                     context,
@@ -65,7 +81,7 @@ class _MealListScreenState extends State<MealListScreen> {
                     ),
                 );
               },
-              icon: Icon(Icons.favorite))
+              )
         ],
       ),
       body: FutureBuilder<List<Meal>>(
