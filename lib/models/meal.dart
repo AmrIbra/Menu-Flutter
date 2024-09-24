@@ -5,6 +5,7 @@ class Meal {
   final String area;
   final String instructions;
   final String thumbnail;
+  bool isFavorite;
 
   Meal({
     required this.id,
@@ -13,6 +14,7 @@ class Meal {
     required this.area,
     required this.instructions,
     required this.thumbnail,
+    this.isFavorite=false,
   });
 
   factory Meal.fromJson(Map<String, dynamic> json) {
@@ -23,6 +25,7 @@ class Meal {
       area: json['strArea'],
       instructions: json['strInstructions'],
       thumbnail: json['strMealThumb'],
+      isFavorite: false,
     );
   }
 }
