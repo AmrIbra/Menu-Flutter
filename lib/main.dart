@@ -58,7 +58,10 @@ class _MealListScreenState extends State<MealListScreen> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => FavoriteMealsScreen(favoriteMeals:favoriteMeals),
+                      builder: (context) => FavoriteMealsScreen(
+                          favoriteMeals:favoriteMeals,
+                          onToggleFavorite: toggleFavorite,
+                      ),
                     ),
                 );
               },
