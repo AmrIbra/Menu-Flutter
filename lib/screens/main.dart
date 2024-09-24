@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'services/meal_service.dart';
-import 'models/meal.dart';
+import '../services/meal_service.dart';
+import '../models/meal.dart';
 import 'favorite_meals_screen.dart';
+import 'random_meal_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -28,6 +29,7 @@ class MealListScreen extends StatefulWidget {
 class _MealListScreenState extends State<MealListScreen> {
   late Future<List<Meal>> futureMeals;
   List<Meal> favoriteMeals = [];
+  Meal? randomMeal;
 
   @override
   void initState() {
@@ -62,6 +64,19 @@ class _MealListScreenState extends State<MealListScreen> {
     });
   }
 
+  void showRandomMeal() async {
+    final meal = await MealService().fetchRandomMeal();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => RandomMealScreen(
+          meal: meal,
+          onToggleFavorite: toggleFavorite,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -84,37 +99,47 @@ class _MealListScreenState extends State<MealListScreen> {
               )
         ],
       ),
-      body: FutureBuilder<List<Meal>>(
-        future: futureMeals,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('No meals found'));
-          } else {
-            return ListView.builder(
-              itemCount: snapshot.data!.length,
-              itemBuilder: (context, index) {
-                final meal = snapshot.data![index];
-                return ListTile(
-                  leading: Image.network(meal.thumbnail),
-                  title: Text(meal.name),
-                  subtitle: Text(meal.category),
-                  trailing: IconButton(
-                    icon:Icon(
-                      meal.isFavorite? Icons.favorite : Icons.favorite_border,
-                      color: meal.isFavorite? Colors.red : null,
-                    ),
-                    onPressed: () => toggleFavorite(meal),
-                  ),
-                );
+      body: Column(
+        children: [
+          ElevatedButton(onPressed: showRandomMeal, child: Text('Meal of the Day'),),
+
+          Expanded(
+            child: FutureBuilder<List<Meal>>(
+              future: futureMeals,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Center(child: Text('No meals found'));
+                } else {
+                  return ListView.builder(
+                    itemCount: snapshot.data!.length,
+                    itemBuilder: (context, index) {
+                      final meal = snapshot.data![index];
+                      return ListTile(
+                        leading: Image.network(meal.thumbnail),
+                        title: Text(meal.name),
+                        subtitle: Text(meal.category),
+                        trailing: IconButton(
+                          icon:Icon(
+                            meal.isFavorite? Icons.favorite : Icons.favorite_border,
+                            color: meal.isFavorite? Colors.red : null,
+                          ),
+                          onPressed: () => toggleFavorite(meal),
+                        ),
+                      );
+                    },
+                  );
+                }
               },
-            );
-          }
-        },
+            ),
+          )
+        ],
       ),
+
+
     );
   }
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'models/meal.dart';
+import '../models/meal.dart';
 
 class FavoriteMealsScreen extends StatefulWidget {
   final List<Meal> favoriteMeals;

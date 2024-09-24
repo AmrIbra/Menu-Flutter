@@ -39,4 +39,15 @@ class MealService {
     return [];
   }
 
+  Future<Meal> fetchRandomMeal() async {
+    final response = await http.get(Uri.parse('$_baseUrl/random.php'));
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return Meal.fromJson(data['meals'][0]);
+    } else {
+      throw Exception('Failed to load random meal');
+    }
+  }
+
+
 }
