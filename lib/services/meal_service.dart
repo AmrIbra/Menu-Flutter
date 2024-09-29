@@ -8,18 +8,22 @@ class MealService {
   static const String _baseUrl = 'https://www.themealdb.com/api/json/v1/1';
   static const String _favoritesKey = 'favorites';
 
-  Future<List<dynamic>> fetchMeals() async {
-    List<dynamic> allMeals = [];
+  Future<List<Map<String,dynamic>>> fetchMealsByLetter(String letter) async {
+    final response = await http.get(Uri.parse('$_baseUrl/search.php?f=$letter'));
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      print('API Response: $data');
+      return List<Map<String, dynamic>>.from(data['meals'] ?? []);
+    } else {
+      throw Exception('Failed to load meals');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchAllMeals() async {
+    List<Map<String, dynamic>> allMeals = [];
     for (var letter in 'abcdefghijklmnopqrstuvwxyz'.split('')) {
-      final response = await http.get(Uri.parse('$_baseUrl/search.php?f=$letter'));
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['meals'] != null) {
-          allMeals.addAll(data['meals']);
-        }
-      } else {
-        throw Exception('Failed to load meals for letter $letter');
-      }
+      final meals = await fetchMealsByLetter(letter);
+      allMeals.addAll(meals);
     }
     return allMeals;
   }

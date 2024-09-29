@@ -28,15 +28,25 @@ class MealListScreen extends StatefulWidget {
 
 class _MealListScreenState extends State<MealListScreen> {
   late Future<List<Meal>> futureMeals;
+  List<Meal> allMeals = [];
+  List<Meal> displayedMeals = [];
   List<Meal> favoriteMeals = [];
+  TextEditingController searchController = TextEditingController();
   Meal? randomMeal;
 
   @override
   void initState() {
     super.initState();
     loadFavorites();
-    futureMeals = MealService().fetchMeals().then((data) =>
-        data.map((meal) => Meal.fromJson(meal)).toList());
+    futureMeals = MealService().fetchAllMeals().then((data) {
+      final meals = data.map((meal) => Meal.fromJson(meal)).toList();
+      setState(() {
+        allMeals = meals;
+        displayedMeals = meals;
+      });
+      print('All meals loaded: ${allMeals.map((meal) => meal.name).toList()}');
+      return meals;
+    });
   }
 
   void loadFavorites() async {
@@ -62,6 +72,24 @@ class _MealListScreenState extends State<MealListScreen> {
       MealService().saveFavorites(favoriteMeals);
       print('Favorites saved: ${favoriteMeals.map((meal) => meal.id).toList()}');
     });
+  }
+
+  void filterMeals(String query) {
+    final filteredMeals = allMeals.where((meal) {
+      final mealName = meal.name.toLowerCase();
+      final mealCategory = meal.category.toLowerCase();
+      final mealArea = meal.area.toLowerCase();
+      final searchQuery = query.toLowerCase();
+
+      return mealName.contains(searchQuery) ||
+          mealCategory.contains(searchQuery) ||
+          mealArea.contains(searchQuery);
+    }).toList();
+
+    setState(() {
+      displayedMeals = filteredMeals;
+    });
+    print('Filtered meals: ${displayedMeals.map((meal) => meal.name).toList()}');
   }
 
   void showRandomMeal() async {
@@ -101,6 +129,17 @@ class _MealListScreenState extends State<MealListScreen> {
       ),
       body: Column(
         children: [
+          TextField(
+            controller: searchController,
+            decoration: InputDecoration(
+              hintText: 'Search by name, category, or country',
+              border: InputBorder.none,
+              hintStyle: TextStyle(color: Colors.blueGrey),
+            ),
+            style: TextStyle(color: Colors.black),
+            onChanged: filterMeals,
+          ),
+
           ElevatedButton(onPressed: showRandomMeal, child: Text('Meal of the Day'),),
 
           Expanded(
@@ -115,13 +154,13 @@ class _MealListScreenState extends State<MealListScreen> {
                   return Center(child: Text('No meals found'));
                 } else {
                   return ListView.builder(
-                    itemCount: snapshot.data!.length,
+                    itemCount: displayedMeals.length,
                     itemBuilder: (context, index) {
-                      final meal = snapshot.data![index];
+                      final meal = displayedMeals[index];
                       return ListTile(
                         leading: Image.network(meal.thumbnail),
                         title: Text(meal.name),
-                        subtitle: Text(meal.category),
+                        subtitle: Text('${meal.category} - ${meal.area}'),
                         trailing: IconButton(
                           icon:Icon(
                             meal.isFavorite? Icons.favorite : Icons.favorite_border,
