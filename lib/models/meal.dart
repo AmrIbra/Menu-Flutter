@@ -5,6 +5,8 @@ class Meal {
   final String area;
   final String instructions;
   final String thumbnail;
+  final List<String> ingredients;
+  final String youtubeUrl;
   bool isFavorite;
 
   Meal({
@@ -14,10 +16,21 @@ class Meal {
     required this.area,
     required this.instructions,
     required this.thumbnail,
+    required this.ingredients,
+    required this.youtubeUrl,
     this.isFavorite=false,
   });
 
   factory Meal.fromJson(Map<String, dynamic> json) {
+
+    List<String> ingredients = [];
+    for (int i = 1; i <= 20; i++) {
+      final ingredient = json['strIngredient$i'];
+      if (ingredient != null && ingredient.isNotEmpty) {
+        ingredients.add(ingredient);
+      }
+    }
+
     return Meal(
       id: json['idMeal'],
       name: json['strMeal'],
@@ -25,6 +38,8 @@ class Meal {
       area: json['strArea'],
       instructions: json['strInstructions'],
       thumbnail: json['strMealThumb'],
+      ingredients: ingredients,
+      youtubeUrl: json['strYoutube'] ?? '',
       isFavorite: false,
     );
   }

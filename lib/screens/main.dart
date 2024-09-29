@@ -3,6 +3,7 @@ import '../services/meal_service.dart';
 import '../models/meal.dart';
 import 'favorite_meals_screen.dart';
 import 'random_meal_screen.dart';
+import 'meal_detail_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -89,7 +90,7 @@ class _MealListScreenState extends State<MealListScreen> {
     setState(() {
       displayedMeals = filteredMeals;
     });
-    print('Filtered meals: ${displayedMeals.map((meal) => meal.name).toList()}');
+    //print('Filtered meals: ${displayedMeals.map((meal) => meal.name).toList()}');
   }
 
   void showRandomMeal() async {
@@ -168,6 +169,13 @@ class _MealListScreenState extends State<MealListScreen> {
                           ),
                           onPressed: () => toggleFavorite(meal),
                         ),
+                        onTap: (){
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => MealDetailScreen(meal: meal))
+                          );
+                        },
                       );
                     },
                   );
