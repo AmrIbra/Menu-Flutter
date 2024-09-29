@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/meal.dart';
+import 'meal_detail_screen.dart';
 
 class RandomMealScreen extends StatelessWidget {
   final Meal meal;
@@ -37,6 +38,18 @@ class RandomMealScreen extends StatelessWidget {
                 onToggleFavorite(meal);
                 Navigator.pop(context); // Close the screen after toggling favorite
               },
+            ),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => MealDetailScreen(meal: meal),
+                  ),
+                );
+              },
+              child: Text('View Details'),
             ),
           ],
         ),

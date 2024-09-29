@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../models/meal.dart';
+import 'meal_detail_screen.dart';
 
 class FavoriteMealsScreen extends StatefulWidget {
   final List<Meal> favoriteMeals;
@@ -51,6 +52,14 @@ class _FavoriteMealsScreenState extends State<FavoriteMealsScreen> {
               ),
           onPressed: () => toggleFavorite(meal),
             ),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => MealDetailScreen(meal: meal),
+                ),
+              );
+            },
           );
         },
       ),
