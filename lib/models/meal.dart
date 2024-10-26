@@ -43,4 +43,16 @@ class Meal {
       isFavorite: false,
     );
   }
+  Map<String, dynamic> toJson() {
+    return {
+      'idMeal': id,
+      'strMeal': name,
+      'strCategory': category,
+      'strArea': area,
+      'strInstructions': instructions,
+      'strMealThumb': thumbnail,
+      'strYoutube': youtubeUrl,
+      for (var i = 0; i < ingredients.length; i++) 'strIngredient${i + 1}': ingredients[i],
+    };
+  }
 }

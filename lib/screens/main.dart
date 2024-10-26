@@ -4,8 +4,17 @@ import '../models/meal.dart';
 import 'favorite_meals_screen.dart';
 import 'random_meal_screen.dart';
 import 'meal_detail_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import '../firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../screens/home_screen.dart';
+import '../screens/LoginScreen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(MyApp());
 }
 
@@ -17,7 +26,25 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MealListScreen(),
+      home: AuthGate(),
+    );
+  }
+}
+
+class AuthGate extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasData) {
+          return HomeScreen();
+        }
+        return LoginScreen();
+      },
     );
   }
 }
@@ -28,7 +55,7 @@ class MealListScreen extends StatefulWidget {
 }
 
 class _MealListScreenState extends State<MealListScreen> {
-  late Future<List<Meal>> futureMeals;
+  Future<List<Meal>>? futureMeals;
   List<Meal> allMeals = [];
   List<Meal> displayedMeals = [];
   List<Meal> favoriteMeals = [];
@@ -39,39 +66,31 @@ class _MealListScreenState extends State<MealListScreen> {
   void initState() {
     super.initState();
     loadFavorites();
-    futureMeals = MealService().fetchAllMeals().then((data) {
-      final meals = data.map((meal) => Meal.fromJson(meal)).toList();
-      setState(() {
-        allMeals = meals;
-        displayedMeals = meals;
-      });
-      print('All meals loaded: ${allMeals.map((meal) => meal.name).toList()}');
-      return meals;
-    });
-  }
+    futureMeals = MealService().fetchAllMeals();
+
+    }
+
 
   void loadFavorites() async {
     final favoriteIds = await MealService().loadFavorites();
     print('Favorites loaded: $favoriteIds');
-    final meals = await futureMeals;
+    //final meals = await futureMeals;
     setState(() {
-      favoriteMeals = meals.where((meal) => favoriteIds.contains(meal.id)).toList();
-      for (var meal in meals) {
-        meal.isFavorite = favoriteIds.contains(meal.id);
-      }
+      favoriteMeals = favoriteIds;
     });
   }
 
-  void toggleFavorite(Meal meal) {
+  void toggleFavorite(Meal meal) async {
     setState(() {
       meal.isFavorite = !meal.isFavorite;
       if (meal.isFavorite) {
         favoriteMeals.add(meal);
+        MealService().saveFavorites(meal);
       } else {
-        favoriteMeals.remove(meal);
+        favoriteMeals.removeWhere((m) => m.id == meal.id);
+        MealService().removeFavorite(meal);
       }
-      MealService().saveFavorites(favoriteMeals);
-      print('Favorites saved: ${favoriteMeals.map((meal) => meal.id).toList()}');
+
     });
   }
 
@@ -155,9 +174,10 @@ class _MealListScreenState extends State<MealListScreen> {
                   return Center(child: Text('No meals found'));
                 } else {
                   return ListView.builder(
-                    itemCount: displayedMeals.length,
+                    itemCount: snapshot.data!.length,
                     itemBuilder: (context, index) {
-                      final meal = displayedMeals[index];
+                      final meal = snapshot.data![index];
+                      meal.isFavorite = favoriteMeals.any((m) => m.id == meal.id);
                       return ListTile(
                         leading: Image.network(meal.thumbnail),
                         title: Text(meal.name),

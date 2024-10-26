@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/meal.dart';
 import 'meal_detail_screen.dart';
+import '../services/meal_service.dart';
 
 class RandomMealScreen extends StatelessWidget {
   final Meal meal;
@@ -8,13 +9,23 @@ class RandomMealScreen extends StatelessWidget {
 
   RandomMealScreen({required this.meal, required this.onToggleFavorite});
 
+  void toggleFavorite(Meal meal) async {
+    meal.isFavorite = !meal.isFavorite;
+    if (meal.isFavorite) {
+      await MealService().saveFavorites(meal);
+    } else {
+      await MealService().removeFavorite(meal);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Random Meal'),
+        title: Text('Meal of the Day'),
       ),
-      body: Center(
+      body: SingleChildScrollView(
+      child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -54,6 +65,6 @@ class RandomMealScreen extends StatelessWidget {
           ],
         ),
       ),
-    );
+    ));
   }
 }
