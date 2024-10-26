@@ -11,11 +11,13 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  User? user;
   List<Meal> favoriteMeals = [];
 
   @override
   void initState() {
     super.initState();
+    user = FirebaseAuth.instance.currentUser;
     _loadFavorites();
   }
 
@@ -45,14 +47,24 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => MealListScreen()),
-            );
-          },
-          child: Text('Go to Menu'),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Welcome, ${user?.email ?? 'Guest'}',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => MealListScreen()),
+                );
+              },
+              child: Text('Go to Menu'),
+            ),
+          ],
         ),
       ),
     );
